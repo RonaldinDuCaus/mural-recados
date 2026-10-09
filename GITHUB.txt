@@ -1,0 +1,35 @@
+COMANDOS PARA O GITHUB — BILHETIM
+
+Execute no terminal PowerShell do VS Code. Troque SEU NOME e SEU EMAIL antes de executar.
+O nome será o autor dos commits. Use um e-mail associado à sua conta GitHub (ou seu e-mail noreply do GitHub).
+O repositório será público para o professor acessar. Os recados continuam protegidos pelas regras do Firestore.
+
+cd "C:\Users\ronal\Desktop\Projetos Glauco\mural-recados"
+$env:Path = "C:\Program Files\GitHub CLI;C:\Program Files\Git\cmd;" + $env:Path
+gh auth status
+
+Se ainda não estiver conectado, execute:
+gh auth login
+Escolha GitHub.com, HTTPS e autenticação pelo navegador.
+
+Depois, execute um comando por vez:
+git init
+git config user.name "SEU NOME"
+git config user.email "SEU EMAIL"
+gh auth setup-git
+git add .
+git status
+git commit -m "Adiciona mural de recados com Firebase"
+git branch -M main
+gh repo create mural-recados --public --source=. --remote=origin --push
+gh repo view --web
+
+Se já existir um repositório mural-recados na sua conta, use outro nome no comando gh repo create.
+Se houver erro, resolva antes de continuar. Não use force push.
+
+PARA ENVIAR ALTERAÇÕES FUTURAS:
+git add .
+git commit -m "Atualiza o mural de recados"
+git push
+
+Referência: https://cli.github.com/manual/gh_repo_create

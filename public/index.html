@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#783e45">
+  <meta name="description" content="Um mural para deixar recados, compartilhar avisos e guardar lembretes.">
+  <title>Bilhetim — Mural de recados</title>
+  <link rel="icon" href="images/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="./"><img src="images/icon.svg" width="36" height="36" alt="">bilhetim<span aria-hidden="true">✳</span></a>
+    <span class="header-note">Pequenas mensagens, boas conexões.</span>
+    <button id="logout" type="button" class="button outline" hidden>Sair</button>
+  </header>
+  <main>
+    <p id="message" class="notice" role="status" aria-live="polite">Abrindo o mural… Se esta mensagem permanecer, abra pelo Live Server e confira sua internet.</p>
+    <noscript><p class="notice error">Ative o JavaScript do navegador para usar o mural.</p></noscript>
+    <section id="setup" class="setup" hidden>
+      <h2>Falta conectar seu Firebase.</h2>
+      <p>Crie o projeto <strong>Mural de Recados</strong>, habilite E-mail/senha e Firestore, preencha <code>public/firebase-config.js</code> e publique as regras. O README explica cada passo.</p>
+    </section>
+
+    <section id="auth-view" class="landing">
+      <div class="welcome-copy">
+        <span class="eyebrow">UM MURAL FEITO DE GENTE</span>
+        <h1>Tem algo para contar?<br><em>Deixe um bilhetim.</em></h1>
+        <p>Avisos, ideias e lembretes têm um lugar aqui.<br>Entre, escreva e faça parte da conversa.</p>
+      </div>
+      <div class="auth-stage">
+        <aside class="welcome-art" aria-label="Ilustração do mural"><img src="images/bilhetes.svg" width="360" height="360" alt="Bilhetes de papel colorido presos com tachinhas, um lápis e um coração desenhado."><span class="art-caption">Uma ideia merece sair do papel.</span></aside>
+        <section class="auth-paper" aria-labelledby="auth-heading">
+          <span class="tape" aria-hidden="true"></span>
+          <h2 id="auth-heading">Pode chegar.</h2>
+          <p id="auth-description" class="muted">Entre na sua conta para abrir o mural.</p>
+          <div class="tabs" aria-label="Acesso ao mural"><button id="login-tab" type="button" aria-pressed="true">Entrar</button><button id="signup-tab" type="button" aria-pressed="false">Criar conta</button></div>
+          <form id="auth-form">
+            <fieldset id="auth-fields" disabled>
+              <label for="auth-email">Seu e-mail</label><input id="auth-email" type="email" autocomplete="email" maxlength="254" required placeholder="voce@exemplo.com">
+              <label for="auth-password">Sua senha</label><input id="auth-password" type="password" autocomplete="current-password" required placeholder="Digite sua senha">
+              <div id="confirmation" hidden><label for="auth-confirm">Repita a senha</label><input id="auth-confirm" type="password" autocomplete="new-password" disabled placeholder="Mais uma vez"><p class="hint">Pelo menos 6 caracteres.</p></div>
+              <button id="auth-submit" class="button primary full" type="submit">Abrir meu mural <span aria-hidden="true">↗</span></button>
+            </fieldset>
+          </form>
+          <p class="paper-foot">Os recados são compartilhados entre as contas do mural.</p>
+        </section>
+        <aside class="little-note"><span class="note-pin" aria-hidden="true"></span><span class="eyebrow">UM LEMBRETE</span><p>Coisas boas<br>começam com<br>um <em>“oi”.</em></p><span class="doodle" aria-hidden="true">♡</span></aside>
+      </div>
+    </section>
+
+    <section id="dashboard" hidden aria-labelledby="wall-heading">
+      <div class="wall-heading">
+        <div><span class="eyebrow">NOSSO CANTINHO DE RECADOS</span><h1 id="wall-heading">O mural está aberto<span>.</span></h1><p id="account" class="muted"></p></div>
+        <button id="new-note" class="button primary" type="button" disabled><span aria-hidden="true">+</span> Escrever recado</button>
+      </div>
+      <div class="board-toolbar">
+        <div class="filters" aria-label="Filtrar recados">
+          <button type="button" data-filter="all" aria-pressed="true">Todos</button>
+          <button type="button" data-filter="recado" aria-pressed="false">Recados</button>
+          <button type="button" data-filter="aviso" aria-pressed="false">Avisos</button>
+          <button type="button" data-filter="lembrete" aria-pressed="false">Lembretes</button>
+        </div>
+        <div class="search-wrap"><label class="sr-only" for="search">Buscar no mural</label><input id="search" type="search" maxlength="120" placeholder="Procurar um bilhete…"></div>
+      </div>
+      <div class="board-frame">
+        <div class="board-meta"><span id="count">Carregando recados…</span><span id="sync" role="status">Conectando…</span></div>
+        <div id="empty" class="empty"><img src="images/icon.svg" width="60" height="60" alt=""><h2 id="empty-title">Preparando o mural</h2><p id="empty-description">Já vamos pendurar os recados por aqui.</p></div>
+        <ul id="note-list" class="note-list" aria-label="Recados do mural"></ul>
+        <p class="board-foot">Leia, compartilhe, volte quando quiser.</p>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="note-dialog" aria-labelledby="editor-heading">
+    <div class="dialog-top"><span class="eyebrow">DO SEU JEITO, COM SUAS PALAVRAS</span><button id="close-dialog" class="icon-button" type="button" aria-label="Fechar formulário">×</button></div>
+    <h2 id="editor-heading">Um novo bilhetim</h2>
+    <p class="muted">Todos no mural poderão ler. Só você pode editar ou excluir.</p>
+    <p id="form-message" class="notice" role="status" aria-live="polite" hidden></p>
+    <form id="note-form">
+      <fieldset id="note-fields">
+        <label for="note-title">Título</label><input id="note-title" required maxlength="80" placeholder="Ex.: Encontro do grupo de estudos">
+        <label for="note-body">Seu recado</label><textarea id="note-body" required maxlength="1000" rows="5" placeholder="Escreva sua mensagem aqui…"></textarea><p class="hint">Até 1.000 caracteres.</p>
+        <div class="form-row"><div><label for="note-category">Tipo de bilhete</label><select id="note-category"><option value="recado">Recado</option><option value="aviso">Aviso</option><option value="lembrete">Lembrete</option></select></div>
+        <fieldset class="color-field"><legend>Cor do papel</legend><div class="colors">
+          <label class="color-option mel"><input type="radio" name="color" value="mel" checked><span aria-hidden="true"></span><span class="sr-only">Amarelo</span></label>
+          <label class="color-option rosa"><input type="radio" name="color" value="rosa"><span aria-hidden="true"></span><span class="sr-only">Rosa</span></label>
+          <label class="color-option lavanda"><input type="radio" name="color" value="lavanda"><span aria-hidden="true"></span><span class="sr-only">Lavanda</span></label>
+          <label class="color-option azul"><input type="radio" name="color" value="azul"><span aria-hidden="true"></span><span class="sr-only">Azul</span></label>
+        </div></fieldset></div>
+        <div class="dialog-actions"><button id="cancel-edit" class="button outline" type="button">Cancelar</button><button id="save-note" class="button primary" type="submit">Pendurar no mural ↗</button></div>
+      </fieldset>
+    </form>
+  </dialog>
+  <footer><span>bilhetim ♡</span><p>Um espaço para lembrar e compartilhar.</p></footer>
+</body>
+</html>
